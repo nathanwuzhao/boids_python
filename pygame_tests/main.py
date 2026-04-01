@@ -1,17 +1,18 @@
 import numpy as np
 import sys
 import pygame
-import scipy
 
 pygame.init()
 
 SCREEN_WIDTH, SCREEN_HEIGHT = 1000, 670
 BACKGROUND_COLOR = (30, 30, 35)
 BOID_COLOR = (120, 170, 240)
-BOID_COUNT = 5
+BOID_COUNT = 6
 TARGET_COLOR = (255, 100, 100)
 TARGET_RADIUS = 8
 FPS = 65
+
+USE_KDTREE = True
 
 
 def limit(vector, max_magnitude):
@@ -65,7 +66,6 @@ class Boid:
         self.position[1] %= SCREEN_HEIGHT
 
     def _steer_toward(self, desired):
-        """Return a steering force toward a desired velocity vector."""
         mag = np.linalg.norm(desired)
         if mag < 1e-6:
             return np.zeros(2)
