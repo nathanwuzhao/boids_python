@@ -89,7 +89,7 @@ class Arena:
             vel, _ = pb.getBaseVelocity(id)
 
             v = np.array([vel[0], vel[1]])
-            speed = np.linalg.norm(v)
+            speed = np.linalg.norm(v) 
 
             if speed < 1e-4:
                 dir = np.array([1.0, 0.0])
@@ -105,13 +105,7 @@ class Arena:
     def reset(self):
         for id in self.agent_ids:
             pos = np.random.uniform(-2, 2, size=2)
+            vx, vy = np.random.uniform(-0.5, 0.5, size=2)
 
             pb.resetBasePositionAndOrientation(id, [pos[0], pos[1], self.height / 2], [0, 0, 0, 1])
-            pb.resetBaseVelocity(id, [0, 0, 0], [0, 0, 0])
-
-
-
-
-
-        
-
+            pb.resetBaseVelocity(id, [vx, vy, 0], [0, 0, 0])

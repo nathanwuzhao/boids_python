@@ -1,4 +1,5 @@
 import numpy as np
+from scipy.spatial import cKDTree
 
 def limit_magnitude(vectors, max_magnitude):
     mags = np.linalg.norm(vectors, axis=1, keepdims=True)
@@ -19,6 +20,8 @@ class BoidController:
         align_weight=1.0,
         coh_weight=0.6,
         target_weight=0.8,
+        use_kdtree=False,
+        wander_strength=0.0,
     ):
         self.max_speed = max_speed
         self.max_force = max_force
@@ -32,6 +35,9 @@ class BoidController:
         self.coh_weight = coh_weight
         self.target_weight = target_weight
 
+        self.use_kdtree = use_kdtree
+        self.wander_strength = wander_strength
+
     def steer_toward(self, current_velocities, desired_vectors):
         desired_mags = np.linalg.norm(desired_vectors, axis=1, keepdims=True)
         desired_dirs = np.divide(desired_vectors, desired_mags + 1e-8, 
@@ -40,6 +46,14 @@ class BoidController:
         desired_velocities = desired_dirs * self.max_speed
         steering = desired_velocities - current_velocities
         return limit_magnitude(steering, self.max_force)
+    
+    def neighbor_lists(self, positions):
+        if not self.use_kdtree:
+            return None
+        
+        max_radius = max(self.separation_radius, self.alignment_radius, self.cohesion_radius)
+        tree = cKDTree(positions)
+        return tree.query_ball_point(positions, r=max_radius)
     
     def compute_actions(self, positions, velocities, target=None):
         n = positions.shape[0]
@@ -56,8 +70,15 @@ class BoidController:
         align_r2 = self.alignment_radius ** 2
         coh_r2 = self.cohesion_radius ** 2
 
+        neighbor_lists = self.neighbor_lists(positions)
+
         for i in range(n):
-            for j in range(n):
+            if neighbor_lists is None:
+                candidates = range(n)
+            else:
+                candidates = neighbor_lists[i]
+
+            for j in candidates:
                 if i == j:
                     continue
 
@@ -112,6 +133,11 @@ class BoidController:
             target_vectors = target[None, :] - positions
             target_steer = self.steer_toward(velocities, target_vectors)
             steering_total += target_steer * self.target_weight
+
+        if self.wander_strength > 0:
+            wander = np.random.uniform(-1.0, 1.0, size=(n, 2))
+            wander = limit_magnitude(wander, 1.0)
+            steering_total += wander * self.wander_strength
 
         desired_velocities = velocities + steering_total
         desired_velocities = limit_magnitude(desired_velocities, self.max_speed)
