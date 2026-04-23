@@ -112,3 +112,33 @@ def compute_all_metrics(positions, velocities, target=None, goal_radius=0.5, saf
         metrics.update(compute_goal_metrics(positions, target, goal_radius))
 
     return metrics
+
+class EpisodeMetrics:
+    def __init__(self):
+        self.history = []
+
+    def reset(self):
+        self.history.clear()
+
+    def update(self, metrics_dict):
+        self.history.append(dict(metrics_dict))
+    
+    def summarize(self):
+        if not self.history:
+            return
+        
+        keys = self.history[0].keys()
+        summary = {}
+
+        for key in keys:
+            values = np.array([step[key] for step in self.history], dtype=float)
+
+            summary[f"{key}_final"] = float(values[-1])
+            summary[f"{key}_mean"] = float(np.mean(values))
+            summary[f"{key}_min"] = float(np.min(values))
+            summary[f"{key}_max"] = float(np.max(values))
+
+        summary["episode_length"] = len(self.history)
+        return summary 
+            
+            
