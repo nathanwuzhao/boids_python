@@ -18,7 +18,7 @@ this motivates the compelling shower thought: what happens if we treat the boid 
 |---|---|
 | `pybullet` | 3D rigid-body physics simulation |
 | `pygame` | 2D prototype visualization |
-| `numpy` | Numerical computation |
+| `numpy` | numerical computation |
 | `scipy` | kd-tree, optimization routines |
 | `torch` | neural network policy training |
 
