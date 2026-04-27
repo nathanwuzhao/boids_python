@@ -6,6 +6,7 @@ from arena import Arena
 from boid_controller import BoidController
 from config import ArenaConfig, BoidParams
 from metrics import compute_all_metrics, EpisodeMetrics
+from observations import SectorObservation, sector_observations_to_array
 
 arena_cfg = ArenaConfig(num_agents=15, fps=60.0, gui=True)
 arena = Arena(num_agents=arena_cfg.num_agents, fps=arena_cfg.fps, gui=arena_cfg.gui)
@@ -21,6 +22,13 @@ target = np.array([0.0, 0.0], dtype=float)
 
 episode_metrics = EpisodeMetrics()
 
+observer = SectorObservation(
+    num_sectors=12, 
+    radius=2.0,
+    distance_decay=True,
+    include_target=True
+)
+
 frame_count = 0
 
 while True:
@@ -31,6 +39,14 @@ while True:
         arena.reset()
 
     positions, velocities = arena.get_states()
+
+    observations = observer.observe(
+        positions=positions,
+        velocities=velocities,
+        target=target
+    )
+
+    obs_array = sector_observations_to_array(observations=observations)
 
     runtime_override = None
     actions = controller.compute_actions(
@@ -47,8 +63,14 @@ while True:
     episode_metrics.update(metrics)
 
     if frame_count % arena_cfg.fps == 0:
+        agent0_obs = observations[0]
+
         print({
             "centroid_goal_dist": round(metrics["centroid_goal_dist"], 2),
+            "obs_shape": obs_array.shape,
+            "agent0_occupancy": np.round(agent0_obs["occupancy"], 2).tolist(),
+            "agent0_radial_motion": np.round(agent0_obs["radial_motion"], 2).tolist()
+
         })
 
     frame_count += 1

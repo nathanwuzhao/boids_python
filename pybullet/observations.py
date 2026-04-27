@@ -153,3 +153,21 @@ class SectorObservation:
         normalized = (angle + np.pi) / (2 * np.pi)
         sector = int(normalized * self.num_sectors)
         return min(max(sector, 0), self.num_sectors - 1)
+
+def sector_observations_to_array(observations):
+    rows = []
+
+    for obs in observations:
+        row_parts =[
+            obs["occupancy"],
+            obs["closeness"],
+            obs["radial_motion"],
+            obs["tangential_motion"]
+        ]
+
+        if "target_dist" in obs:
+            row_parts.append(np.array([obs["target_dist"], obs["target_angle"]], dtype=float))
+
+        rows.append(np.concatenate(row_parts))
+
+    return np.array(rows, dtype=float)

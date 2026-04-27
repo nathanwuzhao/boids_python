@@ -9,16 +9,16 @@ class ArenaConfig:
 @dataclass
 class BoidParams:
     max_speed: float = 2.0
-    max_force: float = 0.1
+    max_force: float = 0.15
 
-    separation_radius: float = 0.7
-    alignment_radius: float = 0.9
-    cohesion_radius: float = 1.1
+    separation_radius: float = 1.0
+    alignment_radius: float = 1.1
+    cohesion_radius: float = 1.2
 
     sep_weight: float = 1.5
     align_weight: float = 1.0
     coh_weight: float = 0.6
-    target_weight: float = 0.8
+    target_weight: float = 0.5
     
     use_kdtree: bool = False
     wander_strength: float = 0.0
